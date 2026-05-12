@@ -3,7 +3,7 @@ import { tokenStorage } from '../utils/storage';
 import { ERROR_MESSAGES } from '../constants';
 
 // Base URL từ environment variable hoặc default
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api.picklepro.com/v1';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 // Tạo axios instance
 export const axiosClient = axios.create({

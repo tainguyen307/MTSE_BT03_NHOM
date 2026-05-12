@@ -1,17 +1,20 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useUser } from "../../../hooks/useUser";
 import { ROUTES } from "../../../constants";
 import svgPaths from "../../../imports/UserProfilePicklePro-1/svg-32x009dzzc";
-import imgPlayerProfile from "../../../imports/UserProfilePicklePro-1/aaede8b37bd4b7cfc7ce226ca695ce1e1b728d58.png";
+
+const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=128&h=128&fit=crop&crop=faces";
 
 export function ProfilePage() {
   const { profile, stats, fetchProfile, isLoading } = useUser();
 
+  // fetchProfile bọc bằng useCallback để ổn định reference
+  const stableFetchProfile = useCallback(fetchProfile, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
-    fetchProfile();
-  }, []);
+    stableFetchProfile();
+  }, [stableFetchProfile]);
 
   return (
     <div
@@ -20,73 +23,25 @@ export function ProfilePage() {
         backgroundImage: "linear-gradient(90deg, rgb(252, 248, 248) 0%, rgb(252, 248, 248) 100%)"
       }}
     >
-      <TopNavBar profile={profile} />
+      {/* Navbar được cung cấp bởi MainLayout — không cần render riêng */}
       <MainContentArea profile={profile} stats={stats} isLoading={isLoading} />
     </div>
   );
 }
 
-function TopNavBar(props) {
-  const { profile } = props;
+// ─── Main Content ─────────────────────────────────────────────────────────────
 
-  return (
-    <div className="fixed backdrop-blur-[6px] bg-[rgba(255,255,255,0.8)] content-stretch flex flex-col items-center left-0 pb-px px-[16px] md:px-[32px] top-0 w-full z-50 border-b border-[rgba(197,198,202,0.3)] shadow-[0px_1px_2px_0px_rgba(0,0,0,0.05)]">
-      <div className="h-[64px] md:h-[80px] max-w-[1440px] relative shrink-0 w-full">
-        <div className="flex flex-row items-center max-w-[inherit] size-full">
-          <div className="bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex items-center justify-between max-w-[inherit] relative size-full w-full">
-            <div className="content-stretch flex gap-[16px] md:gap-[32px] items-center relative shrink-0">
-              <Link to={ROUTES.PROFILE} className="flex flex-col font-['Inter:Black',sans-serif] font-black justify-center leading-[0] not-italic relative shrink-0 text-[#5e5e60] text-[20px] md:text-[24px] tracking-[-0.6px]">
-                <p className="leading-[1.3]">PicklePro</p>
-              </Link>
-              <nav className="content-stretch hidden md:flex gap-[20px] md:gap-[24px] items-center relative shrink-0">
-                <Link to={ROUTES.PROFILE} className="flex flex-col font-['Inter:Bold',sans-serif] font-bold justify-center leading-[0] not-italic relative shrink-0 text-[#44474a] text-[18px] md:text-[20px] hover:text-black transition-colors">
-                  <p className="leading-[1.4]">Courts</p>
-                </Link>
-                <Link to={ROUTES.PROFILE} className="flex flex-col font-['Inter:Bold',sans-serif] font-bold justify-center leading-[0] not-italic relative shrink-0 text-[#44474a] text-[18px] md:text-[20px] hover:text-black transition-colors">
-                  <p className="leading-[1.4]">Bookings</p>
-                </Link>
-                <Link to={ROUTES.PROFILE} className="flex flex-col font-['Inter:Bold',sans-serif] font-bold justify-center leading-[0] not-italic relative shrink-0 text-[#44474a] text-[18px] md:text-[20px] hover:text-black transition-colors">
-                  <p className="leading-[1.4]">Leagues</p>
-                </Link>
-                <Link to={ROUTES.PROFILE} className="flex flex-col font-['Inter:Bold',sans-serif] font-bold justify-center leading-[0] not-italic relative shrink-0 text-[#44474a] text-[18px] md:text-[20px] hover:text-black transition-colors">
-                  <p className="leading-[1.4]">Events</p>
-                </Link>
-              </nav>
-            </div>
-            <div className="content-stretch flex gap-[12px] md:gap-[16px] items-center relative shrink-0">
-              <button className="bg-[#181c1f] content-stretch flex flex-col items-center justify-center px-[16px] md:px-[24px] py-[6px] md:py-[8px] relative rounded-[12px] shrink-0 hover:bg-[#2a2e31] transition-colors">
-                <div className="flex flex-col font-['Inter:Bold',sans-serif] font-bold justify-center leading-[0] not-italic relative shrink-0 text-[#818488] text-[14px] md:text-[16px] text-center">
-                  <p className="leading-[1.5]">Book Now</p>
-                </div>
-              </button>
-              <div className="bg-[#ebe7e7] relative rounded-[9999px] shrink-0 size-[36px] md:size-[40px] border border-[#c5c6ca] overflow-clip">
-                <img
-                  alt="Profile"
-                  className="absolute left-0 max-w-none size-full top-0 object-cover"
-                  src={profile?.avatar || imgPlayerProfile}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MainContentArea(props) {
-  const { profile, stats, isLoading } = props;
-
+function MainContentArea({ profile, stats, isLoading }) {
   if (isLoading && !profile) {
     return (
-      <div className="relative shrink-0 w-full pt-[64px] md:pt-[80px] flex-1 flex items-center justify-center">
+      <div className="relative shrink-0 w-full flex-1 flex items-center justify-center min-h-[60vh]">
         <p className="text-[#44474a] text-[16px]">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="relative shrink-0 w-full pt-[64px] md:pt-[80px] flex-1">
+    <div className="relative shrink-0 w-full flex-1">
       <div className="content-stretch flex flex-col items-center p-[16px] md:p-[48px] relative size-full">
         <div className="content-stretch flex flex-col gap-[24px] md:gap-[32px] items-start max-w-[1440px] relative shrink-0 w-full">
           <PageHeader />
@@ -98,12 +53,10 @@ function MainContentArea(props) {
   );
 }
 
+// ─── Page Header (có nút Log Out) ─────────────────────────────────────────────
+
 function PageHeader() {
   const { logout } = useAuth();
-
-  const handleLogout = () => {
-    logout();
-  };
 
   return (
     <div className="relative shrink-0 w-full">
@@ -111,7 +64,10 @@ function PageHeader() {
         <div className="flex flex-col font-['Inter:Bold',sans-serif] font-bold justify-center leading-[0] not-italic relative shrink-0 text-[#1c1b1c] text-[24px] md:text-[32px] tracking-[-0.64px]">
           <p className="leading-[1.2]">My Dashboard</p>
         </div>
-        <button onClick={handleLogout} className="content-stretch flex gap-[8px] items-center px-[20px] md:px-[24px] py-[10px] md:py-[12px] relative rounded-[12px] shrink-0 border border-[#c5c6ca] hover:bg-gray-50 transition-colors">
+        <button
+          onClick={logout}
+          className="content-stretch flex gap-[8px] items-center px-[20px] md:px-[24px] py-[10px] md:py-[12px] relative rounded-[12px] shrink-0 border border-[#c5c6ca] hover:bg-gray-50 transition-colors"
+        >
           <div className="relative shrink-0 size-[16px]">
             <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16 16">
               <path d={svgPaths.p2d5ed380} fill="#181C1F" />
@@ -126,9 +82,9 @@ function PageHeader() {
   );
 }
 
-function StatsGrid(props) {
-  const { stats } = props;
+// ─── Stats Grid ───────────────────────────────────────────────────────────────
 
+function StatsGrid({ stats }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-[20px] md:gap-[24px] relative shrink-0 w-full">
       <StatCard
@@ -137,7 +93,7 @@ function StatsGrid(props) {
         iconFill="#818488"
         badge="+12% vs last month"
         title="TOTAL BOOKINGS"
-        value={stats?.totalBookings || 0}
+        value={stats?.totalBookings ?? 0}
       />
       <StatCard
         icon={svgPaths.p782a700}
@@ -145,7 +101,7 @@ function StatsGrid(props) {
         iconFill="#646466"
         badge="Upcoming: 2"
         title="MATCHES THIS WEEK"
-        value={stats?.matchesThisWeek || 0}
+        value={stats?.matchesThisWeek ?? 0}
         badgeBg="#e0e3e7"
       />
       <StatCard
@@ -161,9 +117,7 @@ function StatsGrid(props) {
   );
 }
 
-function StatCard(props) {
-  const { icon, iconBg, iconFill, badge, button, title, value, badgeBg = "transparent", borderLeft = false } = props;
-
+function StatCard({ icon, iconBg, iconFill, badge, button, title, value, badgeBg = "transparent", borderLeft = false }) {
   return (
     <div className={`bg-white drop-shadow-[0px_1px_1px_rgba(0,0,0,0.05)] relative rounded-[12px] shrink-0 ${borderLeft ? 'border-l-4 border-[#c5c6ca]' : 'border border-[#c5c6ca]'} min-h-[180px] md:min-h-[197px]`}>
       <div className={`content-stretch flex flex-col gap-[3px] items-start p-[24px] md:p-[33px] ${borderLeft ? 'md:pl-[36px]' : ''} relative size-full`}>
@@ -178,7 +132,7 @@ function StatCard(props) {
               </svg>
             </div>
             {badge && (
-              <div className={`${badgeBg !== 'transparent' ? 'bg-[' + badgeBg + ']' : ''} content-stretch flex flex-col items-start ${badgeBg !== 'transparent' ? 'px-[8px] py-[4px] rounded-[9999px]' : ''} relative shrink-0`}>
+              <div className={`${badgeBg !== 'transparent' ? `bg-[${badgeBg}] px-[8px] py-[4px] rounded-[9999px]` : ''} content-stretch flex flex-col items-start relative shrink-0`}>
                 <div className="flex flex-col font-['Inter:Bold',sans-serif] font-bold justify-center leading-[0] not-italic relative shrink-0 text-[11px] md:text-[12px] text-black">
                   <p className="leading-[1.4]">{badge}</p>
                 </div>
@@ -202,8 +156,9 @@ function StatCard(props) {
   );
 }
 
-function ProfileInformationCard(props) {
-  const { profile } = props;
+// ─── Profile Information Card ─────────────────────────────────────────────────
+
+function ProfileInformationCard({ profile }) {
   const [isEditing, setIsEditing] = useState(false);
 
   return (
@@ -216,16 +171,17 @@ function ProfileInformationCard(props) {
   );
 }
 
-function CardHeader(props) {
-  const { isEditing, setIsEditing } = props;
-
+function CardHeader({ isEditing, setIsEditing }) {
   return (
     <div className="relative shrink-0 w-full">
       <div className="bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex flex-col md:flex-row items-start md:items-center justify-between gap-[16px] relative size-full">
         <div className="flex flex-col font-['Inter:Semi_Bold',sans-serif] font-semibold justify-center leading-[0] not-italic relative shrink-0 text-[#1c1b1c] text-[18px] md:text-[20px]">
           <p className="leading-[1.4]">Profile Information</p>
         </div>
-        <button onClick={() => setIsEditing(!isEditing)} className="content-stretch flex gap-[4px] items-center px-[16px] py-[8px] relative rounded-[8px] shrink-0 hover:bg-gray-100 transition-colors">
+        <button
+          onClick={() => setIsEditing(!isEditing)}
+          className="content-stretch flex gap-[4px] items-center px-[16px] py-[8px] relative rounded-[8px] shrink-0 hover:bg-gray-100 transition-colors"
+        >
           <div className="relative shrink-0 size-[10.5px]">
             <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 10.5 10.5">
               <g id="Container">
@@ -242,8 +198,7 @@ function CardHeader(props) {
   );
 }
 
-function ProfileContent(props) {
-  const { profile, isEditing, setIsEditing } = props;
+function ProfileContent({ profile, isEditing, setIsEditing }) {
   const { updateProfile } = useUser();
 
   const [formData, setFormData] = useState({
@@ -256,9 +211,9 @@ function ProfileContent(props) {
   useEffect(() => {
     if (profile) {
       setFormData({
-        name: profile.name || "",
-        email: profile.email || "",
-        phone: profile.phone || "",
+        name:       profile.name       || "",
+        email:      profile.email      || "",
+        phone:      profile.phone      || "",
         skillLevel: profile.skillLevel || "Advanced (4.5+)"
       });
     }
@@ -328,14 +283,12 @@ function ProfileContent(props) {
   );
 }
 
-function ProfileImageSection(props) {
-  const { profile } = props;
+function ProfileImageSection({ profile }) {
   const { uploadAvatar } = useUser();
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     try {
       await uploadAvatar(file);
     } catch (err) {
@@ -351,7 +304,7 @@ function ProfileImageSection(props) {
             <img
               alt="Profile"
               className="absolute left-0 max-w-none size-full top-0 object-cover"
-              src={profile?.avatar || imgPlayerProfile}
+              src={profile?.avatar || DEFAULT_AVATAR}
             />
           </div>
         </div>
@@ -378,9 +331,9 @@ function ProfileImageSection(props) {
   );
 }
 
-function FormField(props) {
-  const { label, value, onChange, readOnly = false } = props;
+// ─── Shared Fields ────────────────────────────────────────────────────────────
 
+function FormField({ label, value, onChange, readOnly = false }) {
   return (
     <div className="content-stretch flex flex-col gap-[4.8px] items-start relative shrink-0 w-full">
       <div className="flex flex-col font-['Inter:Bold',sans-serif] font-bold justify-center leading-[0] not-italic relative shrink-0 text-[#44474a] text-[11px] md:text-[12px] tracking-[0.6px] uppercase">
@@ -400,9 +353,7 @@ function FormField(props) {
   );
 }
 
-function SelectField(props) {
-  const { label, value, onChange, disabled = false } = props;
-
+function SelectField({ label, value, onChange, disabled = false }) {
   return (
     <div className="content-stretch flex flex-col gap-[4.8px] items-start relative shrink-0 w-full">
       <div className="flex flex-col font-['Inter:Bold',sans-serif] font-bold justify-center leading-[0] not-italic relative shrink-0 text-[#44474a] text-[11px] md:text-[12px] tracking-[0.6px] uppercase">

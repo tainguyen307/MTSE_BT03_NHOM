@@ -4,71 +4,48 @@ import {
   selectCurrentUser,
   selectIsAuthenticated,
   selectAuthStatus,
-  selectAuthError
-} from '../features/auth/store/authSlice';
-import {
+  selectAuthError,
+  clearError,
   login as loginThunk,
   register as registerThunk,
   logout as logoutThunk,
   forgotPassword as forgotPasswordThunk,
   resetPassword as resetPasswordThunk,
-} from '../features/auth/store/authThunks';
+} from '../features/auth/store/authSlice';
 import { ROUTES, STATUS } from '../constants';
 
 export function useAuth() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const user = useSelector(selectCurrentUser);
+  const user           = useSelector(selectCurrentUser);
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const status = useSelector(selectAuthStatus);
-  const error = useSelector(selectAuthError);
-
-  const isLoading = status === STATUS.LOADING;
+  const status         = useSelector(selectAuthStatus);
+  const error          = useSelector(selectAuthError);
+  const isLoading      = status === STATUS.LOADING;
 
   const login = async (credentials) => {
-    try {
-      await dispatch(loginThunk(credentials)).unwrap();
-      navigate(ROUTES.PROFILE);
-    } catch (err) {
-      throw err;
-    }
+    const result = await dispatch(loginThunk(credentials));
+    if (!result.error) navigate(ROUTES.PROFILE);
   };
 
   const register = async (userData) => {
-    try {
-      await dispatch(registerThunk(userData)).unwrap();
-      navigate(ROUTES.PROFILE);
-    } catch (err) {
-      throw err;
-    }
+    const result = await dispatch(registerThunk(userData));
+    if (!result.error) navigate(ROUTES.PROFILE);
   };
 
   const logout = async () => {
-    try {
-      await dispatch(logoutThunk()).unwrap();
-      navigate(ROUTES.LOGIN);
-    } catch (err) {
-      // Still navigate to login even if API call fails
-      navigate(ROUTES.LOGIN);
-    }
+    await dispatch(logoutThunk());
+    navigate(ROUTES.LOGIN);
   };
 
   const forgotPassword = async (email) => {
-    try {
-      await dispatch(forgotPasswordThunk(email)).unwrap();
-    } catch (err) {
-      throw err;
-    }
+    return dispatch(forgotPasswordThunk(email)).unwrap();
   };
 
   const resetPassword = async (token, password) => {
-    try {
-      await dispatch(resetPasswordThunk({ token, password })).unwrap();
-      navigate(ROUTES.LOGIN);
-    } catch (err) {
-      throw err;
-    }
+    await dispatch(resetPasswordThunk({ token, password })).unwrap();
+    navigate(ROUTES.LOGIN);
   };
 
   return {
@@ -76,6 +53,7 @@ export function useAuth() {
     isAuthenticated,
     isLoading,
     error,
+    clearError: () => dispatch(clearError()),
     login,
     register,
     logout,
