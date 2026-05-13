@@ -2,9 +2,15 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes');
+const cors = require('cors');
 
 const app = express();
 app.use(express.json());
+
+app.use(cors({
+  origin: 'http://localhost:5173', // Vite frontend
+  credentials: true
+}));
 
 // Kết nối DB
 mongoose.connect(process.env.MONGO_URI)
